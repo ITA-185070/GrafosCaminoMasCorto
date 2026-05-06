@@ -1,0 +1,9 @@
+name: sagemath-binder
+channels:
+  - conda-forge
+dependencies:
+  - sagemath=10.5
+  - rise
+  - voila
+  - ipywidgets
+  - python=3.11
