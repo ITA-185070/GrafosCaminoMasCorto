@@ -2,7 +2,7 @@ name: sagemath-binder
 channels:
   - conda-forge
 dependencies:
-  - sagemath
+  - sage
   - rise
   - voila
   - ipywidgets
