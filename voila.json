@@ -1,0 +1,13 @@
+{
+  "VoilaConfiguration": {
+    "template": "reveal",
+    "preheat_kernel": true
+  },
+  "VoilaKernelManager": {
+    "kernel_pools_config": {
+      "default": {
+        "pool_size": 1
+      }
+    }
+  }
+}
