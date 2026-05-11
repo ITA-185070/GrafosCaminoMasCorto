@@ -27,9 +27,22 @@ def get_path_vs_shortcut():
     return G, "Start"
 
 
+def get_negative_edge_graph():
+    data = {
+        "s": {"a": 6, "b": 7},
+        "a": {"b": 8, "d": -4, "c": 5},
+        "b": {"c": -3, "d": 9},
+        "c": {"b": -2},
+        "d": {"c": 7, "s": 2},
+    }
+    G = DiGraph(data, weighted=True)
+    return G, "s"
+
+
 def get_all_graphs():
     return {
         "Ejemplo de la guia": get_clrs_graph(),
         "Triango": get_simple_triangle(),
         "Pentagono": get_path_vs_shortcut(),
+        "Pesos Negativos": get_negative_edge_graph(),
     }
