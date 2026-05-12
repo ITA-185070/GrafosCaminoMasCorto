@@ -70,7 +70,13 @@ class AlgorithmVisualizer:
             self.G, self.s = self.graphs[graph_key]
 
         if graph_key not in self.layout_cache:
-            self.layout_cache[graph_key] = self.G.layout(layout="spring")
+            from exampleGraphs import get_custom_layouts
+
+            custom_layouts = get_custom_layouts()
+            if graph_key in custom_layouts:
+                self.layout_cache[graph_key] = custom_layouts[graph_key]
+            else:
+                self.layout_cache[graph_key] = self.G.layout(layout="spring")
 
         # Determinar generador según algoritmo
         generator = (
