@@ -21,12 +21,17 @@ class AlgorithmVisualizer:
         self.steps = []
 
         self._setup_widgets(algo_default)
-        self._initialize_algorithm()
+        self._initialize_algorithm(reset_source=True)
 
     def _setup_widgets(self, algo_default):
         self.graph_drop = widgets.Dropdown(
             options=list(self.graphs.keys()) if self.graphs else [],
             description="Grafo:",
+            style={"description_width": "initial"},
+        )
+        self.source_drop = widgets.Dropdown(
+            options=[],
+            description="Origen:",
             style={"description_width": "initial"},
         )
         self.algo_drop = widgets.Dropdown(
@@ -60,14 +65,32 @@ class AlgorithmVisualizer:
 
         # Observadores
         self.graph_drop.observe(self._on_config_change, names="value")
+        self.source_drop.observe(self._on_source_change, names="value")
         self.algo_drop.observe(self._on_config_change, names="value")
         self.step_slider.observe(self._render_current_step, names="value")
 
-    def _initialize_algorithm(self):
+    def _initialize_algorithm(self, reset_source=False):
         graph_key = self.graph_drop.value if self.graphs else id(self.G)
 
         if self.graphs:
-            self.G, self.s = self.graphs[graph_key]
+            self.G, default_s = self.graphs[graph_key]
+            
+            current_vertices = sorted(list(self.G.vertices()))
+            if list(self.source_drop.options) != current_vertices:
+                self.source_drop.options = current_vertices
+            
+            if reset_source or self.source_drop.value not in self.G.vertices():
+                self.source_drop.value = default_s
+
+        elif self.G:
+             current_vertices = sorted(list(self.G.vertices()))
+             if list(self.source_drop.options) != current_vertices:
+                self.source_drop.options = current_vertices
+             
+             if self.source_drop.value is None or self.source_drop.value not in self.G.vertices():
+                 self.source_drop.value = self.s if self.s in self.G.vertices() else current_vertices[0]
+
+        self.s = self.source_drop.value
 
         if graph_key not in self.layout_cache:
             from exampleGraphs import get_custom_layouts
@@ -90,8 +113,13 @@ class AlgorithmVisualizer:
         self.step_slider.value = 0
         self._render_current_step()
 
-    def _on_config_change(self, _):
-        self._initialize_algorithm()
+    def _on_config_change(self, change):
+        reset = (change["owner"] == self.graph_drop)
+        self._initialize_algorithm(reset_source=reset)
+
+    def _on_source_change(self, change):
+        if change["new"] is not None:
+            self._initialize_algorithm(reset_source=False)
 
     def _get_matching_edges(self, u, v):
         return [
@@ -188,8 +216,15 @@ class AlgorithmVisualizer:
         ui_header = []
         if self.show_selectors:
             row = [self.graph_drop] if self.graphs else []
+            # Row including Source and Algorithm selectors
             ui_header.append(
-                widgets.HBox(row + [self.algo_drop], layout={"border": "none"})
+                widgets.HBox(row + [self.source_drop, self.algo_drop], layout={"border": "none"})
+            )
+        else:
+            # If show_selectors is False, we might still want to show the source selector
+            # depending on the context, but for now we'll stick to the requested behavior.
+            ui_header.append(
+                widgets.HBox([self.source_drop, self.algo_drop], layout={"border": "none"})
             )
 
         # El desc_label está separado del output del plot
