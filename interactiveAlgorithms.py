@@ -10,17 +10,19 @@ class AlgorithmVisualizer:
         graphs=None,
         G_default=None,
         s_default=None,
-        algo_default="Dijkstra",
-        show_selectors=True,
+        algo_default=None,
     ):
         self.graphs = graphs
         self.G = G_default
         self.s = s_default
-        self.show_selectors = show_selectors
         self.layout_cache = {}
         self.steps = []
 
-        self._setup_widgets(algo_default)
+        self.show_graph_selector = graphs is not None and G_default is None
+        self.show_source_selector = s_default is None
+        self.show_algo_selector = algo_default is None
+
+        self._setup_widgets(algo_default or "Dijkstra")
         self._initialize_algorithm(reset_source=True)
 
     def _setup_widgets(self, algo_default):
@@ -51,7 +53,6 @@ class AlgorithmVisualizer:
             value="", layout={"margin": "10px 0px 10px 0px"}
         )
 
-        # Contenedores para alineación horizontal sin bordes
         self.plot_out = widgets.Output(
             layout={"flex": "2", "min_height": "400px", "border": "none"}
         )
@@ -74,21 +75,26 @@ class AlgorithmVisualizer:
 
         if self.graphs:
             self.G, default_s = self.graphs[graph_key]
-            
+
             current_vertices = sorted(list(self.G.vertices()))
             if list(self.source_drop.options) != current_vertices:
                 self.source_drop.options = current_vertices
-            
+
             if reset_source or self.source_drop.value not in self.G.vertices():
                 self.source_drop.value = default_s
 
         elif self.G:
-             current_vertices = sorted(list(self.G.vertices()))
-             if list(self.source_drop.options) != current_vertices:
+            current_vertices = sorted(list(self.G.vertices()))
+            if list(self.source_drop.options) != current_vertices:
                 self.source_drop.options = current_vertices
-             
-             if self.source_drop.value is None or self.source_drop.value not in self.G.vertices():
-                 self.source_drop.value = self.s if self.s in self.G.vertices() else current_vertices[0]
+
+            if (
+                self.source_drop.value is None
+                or self.source_drop.value not in self.G.vertices()
+            ):
+                self.source_drop.value = (
+                    self.s if self.s in self.G.vertices() else current_vertices[0]
+                )
 
         self.s = self.source_drop.value
 
@@ -96,12 +102,20 @@ class AlgorithmVisualizer:
             from exampleGraphs import get_custom_layouts
 
             custom_layouts = get_custom_layouts()
-            if graph_key in custom_layouts:
-                self.layout_cache[graph_key] = custom_layouts[graph_key]
+
+            # Match layout: Try exact match first, then substring match (e.g. "1. Peeper" -> "Peeper")
+            layout = custom_layouts.get(graph_key)
+            if not layout:
+                for key, val in custom_layouts.items():
+                    if key in str(graph_key):
+                        layout = val
+                        break
+
+            if layout:
+                self.layout_cache[graph_key] = layout
             else:
                 self.layout_cache[graph_key] = self.G.layout(layout="spring")
 
-        # Determinar generador según algoritmo
         generator = (
             dijkstra_step_by_step
             if self.algo_drop.value == "Dijkstra"
@@ -114,7 +128,7 @@ class AlgorithmVisualizer:
         self._render_current_step()
 
     def _on_config_change(self, change):
-        reset = (change["owner"] == self.graph_drop)
+        reset = change["owner"] == self.graph_drop
         self._initialize_algorithm(reset_source=reset)
 
     def _on_source_change(self, change):
@@ -149,13 +163,11 @@ class AlgorithmVisualizer:
         e_colors = {}
         active_edges = []
 
-        # 1. Arista Activa (en proceso de relajación)
         if u and v:
             color = Colors.RELAX_SUCCESS if state.get("relaxed") else Colors.RELAX_CHECK
             active_edges = self._get_matching_edges(u, v)
             e_colors[color] = active_edges
 
-        # 2. Aristas del Árbol (predecesores π)
         tree_edges = []
         active_pairs = [e[:2] for e in active_edges]
         for dst, src in state["pi"].items():
@@ -163,7 +175,6 @@ class AlgorithmVisualizer:
                 matches = self._get_matching_edges(src, dst)
                 if matches:
                     edge = matches[0]
-                    # Solo añadir si no es la arista activa
                     if edge[:2] not in active_pairs:
                         tree_edges.append(edge)
 
@@ -212,23 +223,18 @@ class AlgorithmVisualizer:
             display(HTML(get_html_table(self.G, state)))
 
     def display(self):
-        """Muestra el panel de control completo."""
         ui_header = []
-        if self.show_selectors:
-            row = [self.graph_drop] if self.graphs else []
-            # Row including Source and Algorithm selectors
-            ui_header.append(
-                widgets.HBox(row + [self.source_drop, self.algo_drop], layout={"border": "none"})
-            )
-        else:
-            # If show_selectors is False, we might still want to show the source selector
-            # depending on the context, but for now we'll stick to the requested behavior.
-            ui_header.append(
-                widgets.HBox([self.source_drop, self.algo_drop], layout={"border": "none"})
-            )
+        selectors = []
+        if self.show_graph_selector:
+            selectors.append(self.graph_drop)
+        if self.show_source_selector:
+            selectors.append(self.source_drop)
+        if self.show_algo_selector:
+            selectors.append(self.algo_drop)
 
-        # El desc_label está separado del output del plot
-        # Quitamos bordes del VBox principal para evitar el cuadro externo
+        if selectors:
+            ui_header.append(widgets.HBox(selectors, layout={"border": "none"}))
+
         main_box = widgets.VBox(
             ui_header + [self.step_slider, self.desc_label, self.viz_container],
             layout={"border": "none"},
@@ -236,16 +242,19 @@ class AlgorithmVisualizer:
         display(main_box)
 
 
-def launch_case(G_in=None, s_in=None, algo_name="Dijkstra", graphs=None):
+def launch_case(G_in=None, s_in=None, algo_name=None, graphs=None):
     viz = AlgorithmVisualizer(
         graphs=graphs,
         G_default=G_in,
         s_default=s_in,
         algo_default=algo_name,
-        show_selectors=(graphs is not None),
     )
     viz.display()
 
 
-def launch_visualizer(graphs):
+def launch_visualizer(graphs_source):
+    if callable(graphs_source):
+        graphs = graphs_source()
+    else:
+        graphs = graphs_source
     launch_case(graphs=graphs)

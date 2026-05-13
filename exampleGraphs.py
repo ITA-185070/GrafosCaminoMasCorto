@@ -1,7 +1,7 @@
 from sage.all import DiGraph, Graph
 
 GRAPH_DEFINITIONS = {
-    "Ejemplo de la guia": {
+    "Ejemplo de la guía": {
         "type": Graph,
         "start": "a",
         "data": {
@@ -14,12 +14,12 @@ GRAPH_DEFINITIONS = {
             "g": {"f": 14, "d": 8, "c": 12, "e": 20},
         },
     },
-    "Triangulo": {
+    "Triángulo": {
         "type": DiGraph,
         "start": "A",
         "data": {"A": {"B": 1, "C": 5}, "B": {"C": 2}},
     },
-    "Pentagono": {
+    "Pentágono": {
         "type": DiGraph,
         "start": "Start",
         "data": {
@@ -58,41 +58,15 @@ GRAPH_DEFINITIONS = {
             ],
         ],
     },
-    "Grafo 1": {
+    "Basic exercise": {
         "type": Graph,
         "start": "A",
         "data": [
-            ["A", "B", "C", "D", "E", "F", "G", "H", "I"],
-            [
-                ("A", "B", 2),
-                ("B", "A", 2),
-                ("A", "D", 2),
-                ("D", "A", 2),
-                ("A", "C", 5),
-                ("B", "E", 1),
-                ("E", "B", 1),
-                ("B", "C", 3),
-                ("C", "B", 3),
-                ("D", "C", 3),
-                ("C", "D", 3),
-                ("D", "G", 2),
-                ("G", "D", 2),
-                ("C", "E", 1),
-                ("E", "C", 1),
-                ("C", "F", 1),
-                ("F", "C", 1),
-                ("C", "H", 1),
-                ("H", "C", 1),
-                ("E", "I", 7),
-                ("G", "F", 2),
-                ("F", "G", 2),
-                ("F", "H", 3),
-                ("H", "F", 3),
-                ("H", "I", 1),
-            ],
+            ["A", "B", "C", "D"],
+            [("A", "B", 4), ("A", "C", 2), ("B", "C", 1), ("B", "D", 5), ("C", "D", 8)],
         ],
     },
-    "Grafo 2": {
+    "Intermediate exercise": {
         "type": DiGraph,
         "start": "A",
         "data": [
@@ -107,7 +81,27 @@ GRAPH_DEFINITIONS = {
             ],
         ],
     },
-    "Grafo 3": {
+    "Advanced exercise": {
+        "type": DiGraph,
+        "start": "A",
+        "data": [
+            ["A", "B", "C", "D", "E", "F", "G"],
+            [
+                ("A", "B", 3),
+                ("A", "C", 1),
+                ("B", "D", 4),
+                ("B", "F", 6),
+                ("C", "B", 2),
+                ("C", "E", 5),
+                ("D", "E", 2),
+                ("D", "G", 7),
+                ("E", "F", 1),
+                ("F", "G", 3),
+                ("G", "A", 8),
+            ],
+        ],
+    },
+    "Hard exercise": {
         "type": DiGraph,
         "start": "A",
         "data": [
@@ -129,28 +123,6 @@ GRAPH_DEFINITIONS = {
             ],
         ],
     },
-    "Grafo 4": {
-        "type": DiGraph,
-        "start": "A",
-        "data": [
-            ["A", "B", "C", "D", "E", "F", "G", "H"],
-            [
-                ("A", "C", 4),
-                ("A", "F", 7),
-                ("B", "E", 9),
-                ("B", "H", 3),
-                ("C", "D", 3),
-                ("C", "F", 2),
-                ("C", "G", 9),
-                ("D", "E", 3),
-                ("D", "G", 7),
-                ("E", "G", 2),
-                ("E", "H", 7),
-                ("F", "G", 8),
-                ("G", "H", 3),
-            ],
-        ],
-    },
 }
 
 
@@ -160,15 +132,15 @@ def _create_graph(name):
 
 
 def get_clrs_graph():
-    return _create_graph("Ejemplo de la guia")
+    return _create_graph("Ejemplo de la guía")
 
 
 def get_simple_triangle():
-    return _create_graph("Triangulo")
+    return _create_graph("Triángulo")
 
 
 def get_path_vs_shortcut():
-    return _create_graph("Pentagono")
+    return _create_graph("Pentágono")
 
 
 def get_negative_edge_graph():
@@ -179,20 +151,20 @@ def get_peeper_graph():
     return _create_graph("Peeper")
 
 
-def get_graph_1():
-    return _create_graph("Grafo 1")
+def get_basic_exercise():
+    return _create_graph("Basic exercise")
 
 
-def get_graph_2():
-    return _create_graph("Grafo 2")
+def get_intermediate_exercise():
+    return _create_graph("Intermediate exercise")
 
 
-def get_graph_3():
-    return _create_graph("Grafo 3")
+def get_advanced_exercise():
+    return _create_graph("Advanced exercise")
 
 
-def get_graph_4():
-    return _create_graph("Grafo 4")
+def get_challenge_exercise():
+    return _create_graph("Hard exercise")
 
 
 def get_all_graphs():
@@ -201,25 +173,26 @@ def get_all_graphs():
 
 def get_ejercicios_graphs():
     return {
-        "Peeper": get_peeper_graph(),
-        "Grafo 1": get_graph_1(),
-        "Grafo 2": get_graph_2(),
-        "Grafo 3": get_graph_3(),
-        "Grafo 4": get_graph_4(),
+        "Ejercicio 1": get_basic_exercise(),
+        "Ejercicio 2": get_intermediate_exercise(),
+        "Ejercicio 3": get_peeper_graph(),
+        "Ejercicio 4": get_advanced_exercise(),
+        "Ejercicio 5": get_challenge_exercise(),
     }
 
 
 def get_custom_layouts():
-    """Returns custom visual layouts for specific graphs."""
+    peeper_layout = {
+        "a": (0, 0),
+        "b": (1, 1.5),
+        "c": (1, -1.5),
+        "d": (1.5, 3),
+        "e": (1.5, -3),
+        "f": (3.5, 0),
+        "g": (5, 1.2),
+        "h": (5, -1.2),
+    }
     return {
-        "Peeper": {
-            "a": (0, 0),
-            "b": (1, 1.5),
-            "c": (1, -1.5),
-            "d": (1.5, 3),
-            "e": (1.5, -3),
-            "f": (3.5, 0),
-            "g": (5, 1.2),
-            "h": (5, -1.2),
-        }
+        "Peeper": peeper_layout,
+        "Ejercicio 3": peeper_layout,
     }
